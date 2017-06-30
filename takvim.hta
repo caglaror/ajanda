@@ -1,0 +1,306 @@
+<HTML>
+<HEAD>
+<TITLE>.: TAKVİM :.</TITLE>
+<HTA:APPLICATION
+	id="oApp"
+	applicationname="yalicapkini"
+	innerborder = "no"
+	border="thin"
+	borderstyle="normal"
+	caption="yes"
+	icon="img/icons/yalicapkini.ico"
+	maximizebutton="yes"
+	minimizebutton="yes"
+	showintaskbar="yes"
+	singleinstance="yes"
+	sysmenu="yes"
+	version="2.0"
+	windowstate="maximize"
+	scroll = "yes"
+	selection = "yes"
+	navigable = "yes"
+	contextmenu = "yes"
+	>
+<LINK REL="stylesheet" HREF="css/css.css" TYPE="text/css">
+<script language="vbscript" src="baglanti.vbs"></script>
+<body style="margin:0;" bgcolor="buttonface" background="img/fon1.gif" style="background-attachment: fixed" onload="takvimle(0)">
+<table>
+<tr>
+<td  class=ic onclick="window.location.reload()" title="Yenile">YEN�LE
+</td>
+<td  class=ic onclick="window.close()" title="Uygulamay� Kapat">KAPAT
+</td>
+</tr>
+</table>
+<button onclick="isinlan('-1')">&lt;&lt;</button>
+&nbsp;
+<button onclick="takvimle('')">Bu Gün'e Gel</button>
+&nbsp;
+<button onclick="isinlan('1')">&gt;&gt;</button>
+<input type="hidden" value="0" id="ay_gezer">
+<div id="takvim_tasiyici">...</div>
+<div class=pano style="position: relative; width: 350px; height: 215px; z-index: 1; visibility:hidden; filter:alpha(opacity:95)" id="hatirlatici_form" >
+<div class="pano_act" align="right" width="350px"  style="margin:0; background-image:url('img/act_.png')">HATIRLATICI EKLEME FORMU &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="img/icons/105.bmp" style="cursor:hand" title="Kapat" onclick="sakla('hatirlatici_form')"></div>
+<div class="pano_act" align="left" width="350px"  style="margin:0; background-image:url('img/act_.png')" id="hatirlatici_tarih"></div>
+<FIELDSET width="100%" height="100%">
+	<LEGEND><font color="red"><b>HATIRLATICI GİRİŞ FORMU</b></font></LEGEND>
+<table border=0>
+	<tr>
+<td><font class="mini">KONU:</font></td>
+<td id="td2">...</td>
+<td><input type="text" id="select1_1" class="textbox1" size=16 maxlength=20></td>
+	</tr>
+<tr><td><font class="mini">AÇIKLAMA:</font></td>
+<td colspan=2>
+<textarea rows="7" name="aciklama" cols="28"class="222"></textarea>
+</td>
+<tr><td colspan="3" align="center"><input type="button" value="Kaydet" onclick="kontrol_ve_kaydet()" class="textbox1" id="kayit_dugmesi">
+<input type="hidden" value="" id="tarih_tasiyici">
+</td></tr>
+</table>
+<SCRIPT LANGUAGE="VBScript">
+call konularigetir()
+function konularigetir()
+Call rskapatici()
+SQL="SELECT DISTINCT uyari_konusu FROM hatirlatici ORDER BY uyari_konusu"
+rs.Open SQL
+uk_secenekler="<select name=select1 id=select1 class=323 onchange=kontrolet()><option value= >*Yeni*</option>"
+Do while not rs.eof
+secimler=rs("uyari_konusu")
+if len(secimler)>16 then
+secimler=Left(rs("uyari_konusu"),16) & "..."
+End if
+uk_secenekler=uk_secenekler & "<option value=" & rs("uyari_konusu") & ">" & secimler & "</option>"
+rs.movenext
+Loop
+uk_secenekler=uk_secenekler & "</select>"
+document.getElementbyId("td2").innerHTML=uk_secenekler
+End Function
+function kontrolet()
+	If document.getElementbyId("select1").selectedIndex=0 then
+		document.getElementbyId("select1_1").style.visibility="visible"
+		document.getElementbyId("select1_1").focus()
+	Else
+		document.getElementbyId("select1_1").style.visibility="hidden"
+	End if
+End Function
+		function kontrol_ve_kaydet()
+			Set dugme=document.getElementById("kayit_dugmesi")
+			Set secim = document.getElementbyId("select1")
+			Set secim2 =document.getElementbyId("select1_1")
+			Set aciklamamiz=document.getElementbyId("aciklama")
+			Set tarihimiz=document.getElementById("tarih_tasiyici")
+	if secim.selectedIndex=0 AND secim2.value="" then
+	msgbox("Konu seçilmemiş...")
+	secim.focus()
+	exit function
+	End if
+	if aciklamamiz.value="" then
+	msgbox("Bir açıklama girmelisiniz...")
+	aciklama.focus()
+	exit function
+	End if
+		Call rskapatici()
+SQL="SELECT * FROM hatirlatici"
+rs.Open SQL
+rs.addnew
+rs("hangi_uygulamadan")="takvim"
+	if secim.selectedIndex=0 then
+rs("uyari_konusu")=secim2.value
+	Else
+		WHICHselection=secim.selectedIndex
+rs("uyari_konusu")=secim.options(WHICHselection).value
+	End if
+rs("eklenme_tarihi")=Date()
+rs("hatirlat_tarihi")=tarihimiz.value
+rs("aciklama")=aciklamamiz.value
+rs.update
+document.getElementbyId("aciklama").value=""
+document.getElementbyId("select1_1").style.visibility="visible"
+document.getElementbyId("select1_1").value=""
+secim.selectedIndex=0
+sakla("hatirlatici_form")
+takvimle(month(tarihimiz.value)-month(now))
+		End function
+</SCRIPT>
+</FIELDSET>
+</div>
+<div id="coklukullanimdivi" style="visibility:hidden;border-style: outset; border-width: 2px; background-color: #FFFFCC">Çoklu Kullanım DIV elementi</div>
+</body>
+</html>
+<script language="vbscript">
+Function isinlan(uzaklik)
+document.getElementById("ay_gezer").value = CInt(document.getElementById("ay_gezer").value) + CInt(uzaklik)
+Call takvimle(document.getElementById("ay_gezer").value)
+End function
+Function takvimle(ay)
+if ay="" OR ay=Null then
+ay=0
+document.getElementById("ay_gezer").value=0
+End if
+ytarih=DateAdd("m",ay,now)
+ay=month(ytarih)
+yil=Year(ytarih)
+bugun=day(ytarih)
+ilkgunhaftaninkacincisi=weekday((Dateadd("d",-(bugun-1),ytarih)),2)
+ilkgun=weekdayname(ilkgunhaftaninkacincisi,false,2)
+sonrakiay=DateSerial(yil,(ay+1),1)
+simdikiay=DateAdd("d",-1,sonrakiay)
+kacceker=Day(simdikiay)
+dugmefonu="img/dugmefonu.png"
+icerik="<table width=100% cellpadding=0 cellspacing=1 border=0 style=border-style:solid;border-width:1px;>"
+icerik=icerik &"<tr><td colspan=7 class=ic align=center background=img/fon_ust.png><input type=button class=textbox2 onclick=isinlan('-1') value=&lt;&lt; title="& MonthName(Month(DateAdd("m",-1,simdikiay)))&","&Year(DateAdd("m",-1,simdikiay))&" style=background-image:url('"&dugmefonu&"')>&nbsp;&nbsp;<font class=neon>"& MonthName(ay) &","&Year(simdikiay)&"</font>&nbsp;&nbsp;<input type=button class=textbox2 onclick=isinlan('1') value=&gt;&gt; style=background-image:url('"&dugmefonu&"') title="& MonthName(Month(DateAdd("m",1,simdikiay)))&","&Year(DateAdd("m",1,simdikiay))&"></td></tr><tr>"
+icerik=icerik & "<tr> <td class=ic_gunler background=img/gunler.png>Ptesi</td><td class=ic_gunler background=img/gunler.png>Salı</td><td  class=ic_gunler background=img/gunler.png>Çarşamba</td><td class=ic_gunler background=img/gunler.png>Perşembe</td><td class=ic_gunler background=img/gunler.png>Cuma</td><td  class=ic_gunler background=img/gunler.png>Ctesi</td><td class=ic_gunler background=img/gunler.png>Pazar</td> </tr><tr>"
+saybakim=0
+ilkgunhaftaninkacincisi=ilkgunhaftaninkacincisi-1 ' burada fahtanin gunu TR uyarlamasi farkı eklendi yani 1
+For gunumuz=1 to kacceker + ilkgunhaftaninkacincisi
+if saybakim < ilkgunhaftaninkacincisi then
+tarihx=dateserial(yil,ay,gunumuz-ilkgunhaftaninkacincisi)
+		saybakim=(saybakim+1)
+oncekiayingunu=Dateadd("d",-(ilkgunhaftaninkacincisi-saybakim+1),(DateSerial(yil,ay,1)))
+icerik = icerik & "<td align=right valign=bottom class=ic height=75 onclick=isinlan(-1) title=Bu&nbsp;aya&nbsp;git style=cursor:hand  background=img/fon_oncekiay.png>"& oncekiayingunu &"</td>"
+Else
+		tarih=dateserial(yil,ay,gunumuz-ilkgunhaftaninkacincisi)
+	Select case ilkgun
+		case "Pazar"
+		kac=1
+		case "Pazartesi"
+		kac=2
+		case "Salı"
+		kac=3
+		case "Çarşamba"
+		kac=4
+		case "Perşembe"
+		kac=5
+		case "Cuma"
+		kac=6
+		case "Cumartesi"
+		kac=7
+	End Select
+		kacincigun=weekday(tarih)
+		Select Case kacincigun
+			case 1
+				renk="#FF6600"
+				frenk="white"
+				bg="img/hsonu.png"
+			case 7
+				renk="#FF6600"
+				frenk="white"
+				bg="img/hsonu.png"
+			Case Else
+				renk="lightyellow"
+				frenk="black"
+				bg="img/gun.png"
+		End Select
+if day(tarih)=day(now) then
+renk="pink"
+frenk="black"
+bg="img/bugun.png"
+End if
+Call rskapatici()
+tarih=Replace(tarih,".","/")
+tarih=JXIsoDate(tarih)
+SQL="SELECT uyari_konusu,hatirlat_tarihi,id FROM hatirlatici WHERE hatirlat_tarihi=#"& tarih &"#"
+rs.Open SQL
+mesaj=""
+		Do while not rs.eof
+		mesaj =  "<font onclick=detaygetir("&rs("id")&") class=mini>-" & Replace(rs("uyari_konusu")," ","&nbsp;") & "</font><br>" & mesaj
+		rs.movenext
+		Loop
+icerik = icerik & "<td bgcolor="&renk&" align=left width=14% height=75 valign=top id="&tarih&" background="& bg &"><font size=2 color="&frenk&"><b>"&tarih & "&nbsp;&nbsp;&nbsp;</b></font><img src=img/icons/123.bmp onclick=hatirlaticiekle() title=Hatırlatici&nbsp;Ekle  style=cursor:hand><div class=hatirla>"&mesaj&"&nbsp;</div></td>"
+End if
+if gunumuz mod 7 = 0 then
+		icerik=icerik & "</tr><tr>"
+End if
+Next
+gunsayici=0
+if kacceker+ilkgunhaftaninkacincisi MOD 7 <> 0 then
+	degergun = weekday(simdikiay,2) +1 
+Else	
+	degergun=1
+End if
+	For xcv = degergun to 7
+	gunsayici = gunsayici + 1
+sonrakiayingunu=Dateadd("d",gunsayici,(DateSerial(yil,ay,kacceker)))
+	icerik = icerik & "<td align=right valign=bottom class=ic height=75 onclick=isinlan(1) title=Bu&nbsp;aya&nbsp;git style=cursor:hand background=img/fon_oncekiay.png>"& sonrakiayingunu&"</td>"
+	Next
+icerik =icerik &"</tr></table>"
+document.getElementbyId("takvim_tasiyici").innerHTML=icerik
+End function
+	function hatirlaticiekle()
+		Set elimizdeki=window.event.srcElement
+document.getElementById("hatirlatici_tarih").innerHTML="TARİH:"& elimizdeki.parentElement.id
+document.getElementById("tarih_tasiyici").value=elimizdeki.parentElement.id
+		Set hf=document.getElementById("hatirlatici_form")
+		Set ekran=window.screen
+	if ekran.availwidth > window.event.x + Replace(hf.style.width,"px","") then
+		hf.style.position="absolute"
+		hf.style.left=window.event.x
+		hf.style.top=window.event.y
+		hf.style.visibility="visible"
+	Elseif ekran.availwidth < window.event.x + Replace(hf.style.width,"px","") then
+		hf.style.position="absolute"
+		hf.style.top=window.event.y
+		hf.style.left=ekran.availwidth-Replace(hf.style.width,"px","")		
+		hf.style.visibility="visible"
+	End if
+	End function
+	Function sakla(neyi)
+document.getElementById(neyi).style.visibility="hidden"
+	End Function
+	Function cevir(neyi)
+	if document.getElementById(neyi).readonly="True" then
+		document.getElementById(neyi).readonly="False"
+		document.getElementById(neyi).focus()
+		if neyi="aciklamasi" then
+		document.getElementById("baslik2").innerText="KAYDET"
+		End if
+	Else
+		document.getElementById(neyi).readonly="True"
+Call rskapatici()
+SQL="SELECT * FROM hatirlatici WHERE id="&document.getElementById("idtasiyici").value
+rs.Open SQL
+		if neyi="aciklamasi" then
+		document.getElementById("baslik2").innerText="DUZENLE"
+		End if
+rs("aciklama")=document.getElementById("aciklamasi").value
+rs.update	
+	End if
+	End Function
+Function JXIsoDate(dteDate)
+   If IsDate(dteDate) = True Then
+      DIM dteDay, dteMonth, dteYear
+      dteDay = Day(dteDate)
+      dteMonth = Month(dteDate)
+      dteYear   = Year(dteDate)
+      JXIsoDate =  dteYear & "-" & Right(Cstr(dteMonth + 100),2) & "-" & Right(Cstr(dteDay + 100),2)    
+   Else
+      JXIsoDate = Null
+   End If
+End Function
+
+ Function detaygetir(id)
+Call rskapatici()
+SQL="SELECT * FROM hatirlatici WHERE id="&id
+rs.Open SQL
+		Set ckd=document.getElementById("coklukullanimdivi")
+		Set ekran=window.screen
+		ckd.style.width="200"
+		ckd.style.height="200"
+		icHTML = icHTML & "<font class=baslik4>"&rs("uyari_konusu")&"</font><br>&nbsp;<font class=mini>Eklenme Tarihi:"&rs("eklenme_tarihi")&"</font><br>"
+		icHTML = icHTML & "<textarea rows=8 cols=31 style=border-style: none; border-width: 1px; padding: 0; readonly id=aciklamasi>" & rs("aciklama") &"</textarea>"
+		icHTML = icHTML & "<font class=neon onclick=sakla('coklukullanimdivi') style=cursor:hand title=Kapat>KAPAT</font>&nbsp;&nbsp;<font class=neon style=cursor:hand title=Düzenle onclick=cevir('aciklamasi') id=baslik2>DÜZELT</font><input type=hidden value="&id&" id=idtasiyici>"
+		ckd.innerHTML=icHTML
+	if ekran.availwidth > window.event.x + Replace(ckd.style.width,"px","") then
+		ckd.style.position="absolute"
+		ckd.style.left=window.event.x
+		ckd.style.top=window.event.y
+		ckd.style.visibility="visible"
+	Elseif ekran.availwidth < window.event.x + Replace(ckd.style.width,"px","") then
+		ckd.style.position="absolute"
+		ckd.style.top=window.event.y
+		ckd.style.left=ekran.availwidth-Replace(ckd.style.width,"px","")		
+		ckd.style.visibility="visible"
+	End if
+End function
+</script>
